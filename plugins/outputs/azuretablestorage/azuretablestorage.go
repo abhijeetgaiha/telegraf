@@ -2,6 +2,7 @@ package azuretablestorage
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"strconv"
@@ -202,7 +203,7 @@ func getUTCTicks_DescendingOrder(lastSampleTimestamp string) uint64 {
 	diff := uint64(currentTime.Sub(zeroTime))
 	currentTimeInTicks := diff / 100
 	UTCTicks_DescendincurrentTimeOrder := maxValueDateTimeInTicks - currentTimeInTicks
-	fmt.Println(UTCTicks_DescendincurrentTimeOrder)
+	//fmt.Println(UTCTicks_DescendincurrentTimeOrder)
 
 	return UTCTicks_DescendincurrentTimeOrder
 }
@@ -227,11 +228,20 @@ func (azureTableStorage *AzureTableStorage) Write(metrics []telegraf.Metric) err
 		UTCTicks_DescendingOrderStr, encodedCounterName := getRowKeyComponents(props[TIMESTAMP].(string), props[CounterName].(string))
 		props[DeploymentId] = azureTableStorage.DeploymentId
 		props[Host], _ = os.Hostname()
-
+		inputPlugin := metrics[i].Tags()["input_plugin"]
+		if inputPlugin != "" {
+			props["CounterName"] = inputPlugin + "_" + props["CounterName"].(string)
+		}
 		//period is the period which decides when to transfer the aggregated metrics.Its in format "60s"
 		periodStr := metrics[i].Tags()[Period]
 		table := azureTableStorage.PeriodVsTableNameVsTableRef[periodStr].TableRef
 
+		fmt.Println("MetricName: " + props["CounterName"].(string))
+		log.Println("MetricName: " + props["CounterName"].(string))
+		for tagName, tagValue := range metrics[i].Tags() {
+			log.Println("TagName:" + tagName + "TagValue: " + tagValue)
+			fmt.Println("TagName:" + tagName + "TagValue: " + tagValue)
+		}
 		//two rows are written for each metric as Azure table has optimized prefix search only and no index.
 		rowKey1 := UTCTicks_DescendingOrderStr + "_" + encodedCounterName
 		entity = table.GetEntityReference(partitionKey, rowKey1)

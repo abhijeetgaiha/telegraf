@@ -546,12 +546,14 @@ func (m *Mysql) gatherGlobalVariables(db *sql.DB, serv string, acc telegraf.Accu
 		}
 		// Send 20 fields at a time
 		if len(fields) >= 20 {
+			tags["input_plugin"] = "mysql"
 			acc.AddFields("mysql_variables", fields, tags)
 			fields = make(map[string]interface{})
 		}
 	}
 	// Send any remaining fields
 	if len(fields) > 0 {
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_variables", fields, tags)
 	}
 	return nil
@@ -597,6 +599,7 @@ func (m *Mysql) gatherSlaveStatuses(db *sql.DB, serv string, acc telegraf.Accumu
 				fields["slave_"+col] = value
 			}
 		}
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql", fields, tags)
 	}
 
@@ -635,6 +638,7 @@ func (m *Mysql) gatherBinaryLogs(db *sql.DB, serv string, acc telegraf.Accumulat
 		"binary_size_bytes":  size,
 		"binary_files_count": count,
 	}
+	tags["input_plugin"] = "mysql"
 	acc.AddFields("mysql", fields, tags)
 	return nil
 }
@@ -670,12 +674,14 @@ func (m *Mysql) gatherGlobalStatuses(db *sql.DB, serv string, acc telegraf.Accum
 
 		// Send 20 fields at a time
 		if len(fields) >= 20 {
+			tags["input_plugin"] = "mysql"
 			acc.AddFields("mysql", fields, tags)
 			fields = make(map[string]interface{})
 		}
 	}
 	// Send any remaining fields
 	if len(fields) > 0 {
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql", fields, tags)
 	}
 	// gather connection metrics from processlist for each user
@@ -700,6 +706,7 @@ func (m *Mysql) gatherGlobalStatuses(db *sql.DB, serv string, acc telegraf.Accum
 					return err
 				}
 				fields["connections"] = connections
+				tags["input_plugin"] = "mysql"
 				acc.AddFields("mysql_users", fields, tags)
 			}
 		}
@@ -770,7 +777,7 @@ func (m *Mysql) gatherGlobalStatuses(db *sql.DB, serv string, acc telegraf.Accum
 					"empty_queries":          empty_queries,
 					"total_ssl_connections":  total_ssl_connections,
 				}
-
+				tags["input_plugin"] = "mysql"
 				acc.AddFields("mysql_user_stats", fields, tags)
 			}
 		}
@@ -820,6 +827,7 @@ func (m *Mysql) GatherProcessListStatuses(db *sql.DB, serv string, acc telegraf.
 	for s, c := range stateCounts {
 		fields[newNamespace("threads", s)] = c
 	}
+	tags["input_plugin"] = "mysql"
 	acc.AddFields("mysql_process_list", fields, tags)
 	return nil
 }
@@ -896,6 +904,7 @@ func (m *Mysql) GatherUserStatisticsStatuses(db *sql.DB, serv string, acc telegr
 			"empty_queries":          empty_queries,
 			"total_ssl_connections":  total_ssl_connections,
 		}
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_user_stats", fields, tags)
 	}
 	return nil
@@ -944,7 +953,7 @@ func (m *Mysql) gatherPerfTableIOWaits(db *sql.DB, serv string, acc telegraf.Acc
 			"table_io_waits_seconds_total_update": timeUpdate / picoSeconds,
 			"table_io_waits_seconds_total_delete": timeDelete / picoSeconds,
 		}
-
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", fields, tags)
 	}
 	return nil
@@ -998,7 +1007,7 @@ func (m *Mysql) gatherPerfIndexIOWaits(db *sql.DB, serv string, acc telegraf.Acc
 			fields["index_io_waits_seconds_total_update"] = timeUpdate / picoSeconds
 			fields["index_io_waits_seconds_total_delete"] = timeDelete / picoSeconds
 		}
-
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", fields, tags)
 	}
 	return nil
@@ -1032,7 +1041,7 @@ func (m *Mysql) gatherInfoSchemaAutoIncStatuses(db *sql.DB, serv string, acc tel
 		fields := make(map[string]interface{})
 		fields["auto_increment_column"] = incValue
 		fields["auto_increment_column_max"] = maxInt
-
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_table_schema", fields, tags)
 	}
 	return nil
@@ -1064,12 +1073,14 @@ func (m *Mysql) gatherInnoDBMetrics(db *sql.DB, serv string, acc telegraf.Accumu
 		}
 		// Send 20 fields at a time
 		if len(fields) >= 20 {
+			tags["input_plugin"] = "mysql"
 			acc.AddFields("mysql_innodb", fields, tags)
 			fields = make(map[string]interface{})
 		}
 	}
 	// Send any remaining fields
 	if len(fields) > 0 {
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_innodb", fields, tags)
 	}
 	return nil
@@ -1172,6 +1183,8 @@ func (m *Mysql) gatherPerfTableLockWaits(db *sql.DB, serv string, acc telegraf.A
 			"write_concurrent_insert": countWriteConcurrentInsert,
 			"write_low_priority":      countWriteLowPriority,
 		}
+
+		sqlLWTags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", sqlLWFields, sqlLWTags)
 
 		externalLWTags := copyTags(tags)
@@ -1180,6 +1193,8 @@ func (m *Mysql) gatherPerfTableLockWaits(db *sql.DB, serv string, acc telegraf.A
 			"read":  countReadExternal,
 			"write": countWriteExternal,
 		}
+
+		externalLWTags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", externalLWFields, externalLWTags)
 
 		sqlLWSecTotalTags := copyTags(tags)
@@ -1194,6 +1209,7 @@ func (m *Mysql) gatherPerfTableLockWaits(db *sql.DB, serv string, acc telegraf.A
 			"write_concurrent_insert": timeWriteConcurrentInsert / picoSeconds,
 			"write_low_priority":      timeWriteLowPriority / picoSeconds,
 		}
+		sqlLWSecTotalTags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", sqlLWSecTotalFields, sqlLWSecTotalTags)
 
 		externalLWSecTotalTags := copyTags(tags)
@@ -1202,6 +1218,7 @@ func (m *Mysql) gatherPerfTableLockWaits(db *sql.DB, serv string, acc telegraf.A
 			"read":  timeReadExternal / picoSeconds,
 			"write": timeWriteExternal / picoSeconds,
 		}
+		externalLWSecTotalTags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", externalLWSecTotalFields, externalLWSecTotalTags)
 	}
 	return nil
@@ -1233,7 +1250,7 @@ func (m *Mysql) gatherPerfEventWaits(db *sql.DB, serv string, acc telegraf.Accum
 			"events_waits_total":         starCount,
 			"events_waits_seconds_total": timeWait / picoSeconds,
 		}
-
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", fields, tags)
 	}
 	return nil
@@ -1277,6 +1294,7 @@ func (m *Mysql) gatherPerfFileEventsStatuses(db *sql.DB, serv string, acc telegr
 		miscTags["mode"] = "misc"
 		fields["file_events_total"] = countWrite
 		fields["file_events_seconds_total"] = sumTimerMisc / picoSeconds
+		miscTags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", fields, miscTags)
 
 		readTags := copyTags(tags)
@@ -1284,6 +1302,7 @@ func (m *Mysql) gatherPerfFileEventsStatuses(db *sql.DB, serv string, acc telegr
 		fields["file_events_total"] = countRead
 		fields["file_events_seconds_total"] = sumTimerRead / picoSeconds
 		fields["file_events_bytes_totals"] = sumNumBytesRead
+		readTags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", fields, readTags)
 
 		writeTags := copyTags(tags)
@@ -1291,6 +1310,7 @@ func (m *Mysql) gatherPerfFileEventsStatuses(db *sql.DB, serv string, acc telegr
 		fields["file_events_total"] = countWrite
 		fields["file_events_seconds_total"] = sumTimerWrite / picoSeconds
 		fields["file_events_bytes_totals"] = sumNumBytesWrite
+		writeTags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", fields, writeTags)
 
 	}
@@ -1359,6 +1379,7 @@ func (m *Mysql) gatherPerfEventsStatements(db *sql.DB, serv string, acc telegraf
 			"events_statements_no_index_used_total":     noIndexUsed,
 		}
 
+		tags["input_plugin"] = "mysql"
 		acc.AddFields("mysql_perf_schema", fields, tags)
 	}
 	return nil
@@ -1430,6 +1451,7 @@ func (m *Mysql) gatherTableSchema(db *sql.DB, serv string, acc telegraf.Accumula
 			tags["schema"] = tableSchema
 			tags["table"] = tableName
 
+			tags["input_plugin"] = "mysql"
 			acc.AddFields("mysql_table_schema",
 				map[string]interface{}{"rows": tableRows}, tags)
 
@@ -1447,7 +1469,7 @@ func (m *Mysql) gatherTableSchema(db *sql.DB, serv string, acc telegraf.Accumula
 			versionTags["engine"] = engine
 			versionTags["row_format"] = rowFormat
 			versionTags["create_options"] = createOptions
-
+			versionTags["input_plugin"] = "mysql"
 			acc.AddFields("mysql_table_schema_version",
 				map[string]interface{}{"table_version": version}, versionTags)
 		}

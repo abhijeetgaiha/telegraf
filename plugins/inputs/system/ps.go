@@ -35,6 +35,7 @@ type PSDiskDeps interface {
 func add(acc telegraf.Accumulator,
 	name string, val float64, tags map[string]string) {
 	if val >= 0 {
+		tags["input_plugin"] = "ps"
 		acc.AddFields(name, map[string]interface{}{"value": val}, tags)
 	}
 }

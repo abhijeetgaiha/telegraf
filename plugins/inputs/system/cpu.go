@@ -78,6 +78,7 @@ func (s *CPUStats) Gather(acc telegraf.Accumulator) error {
 			if s.ReportActive {
 				fieldsC["time_active"] = activeCpuTime(cts)
 			}
+			tags["input_plugin"]="cpu"
 			acc.AddCounter("cpu", fieldsC, tags, now)
 		}
 
@@ -119,6 +120,7 @@ func (s *CPUStats) Gather(acc telegraf.Accumulator) error {
 		if s.ReportActive {
 			fieldsG["usage_active"] = 100 * (active - lastActive) / totalDelta
 		}
+		tags["input_plugin"] = "cpu"
 		acc.AddGauge("cpu", fieldsG, tags, now)
 	}
 

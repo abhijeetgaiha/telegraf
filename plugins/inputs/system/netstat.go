@@ -59,6 +59,7 @@ func (s *NetStats) Gather(acc telegraf.Accumulator) error {
 		"tcp_none":        counts["NONE"],
 		"udp_socket":      counts["UDP"],
 	}
+	tags["input_plugin"]="netstat"
 	acc.AddFields("netstat", fields, tags)
 
 	return nil

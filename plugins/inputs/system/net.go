@@ -86,6 +86,7 @@ func (s *NetIOStats) Gather(acc telegraf.Accumulator) error {
 			"drop_in":      io.Dropin,
 			"drop_out":     io.Dropout,
 		}
+		tags["input_plugin"] = "net"
 		acc.AddCounter("net", fields, tags)
 	}
 
@@ -103,6 +104,7 @@ func (s *NetIOStats) Gather(acc telegraf.Accumulator) error {
 	tags := map[string]string{
 		"interface": "all",
 	}
+	tags["input_plugin"] = "net"
 	acc.AddFields("net", fields, tags)
 
 	return nil
