@@ -35,10 +35,14 @@ func NewEnvClient() (Client, error) {
 }
 
 func NewClient(host string, tlsConfig *tls.Config) (Client, error) {
-	proto, addr, _, err := docker.ParseHost(host)
+	//ParseHost() has been removed: https://github.com/influxdata/telegraf/issues/3921
+	//change made as per https://github.com/moby/moby/commit/54242cd067c234960d1295a67271475f9d099f22
+	hostURL, err := docker.ParseHostURL(host)
 	if err != nil {
 		return nil, err
 	}
+	proto := hostURL.Scheme
+	addr := hostURL.Host
 
 	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,

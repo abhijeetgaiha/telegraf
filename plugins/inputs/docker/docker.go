@@ -250,6 +250,7 @@ func (d *Docker) gatherSwarmInfo(acc telegraf.Accumulator) error {
 				log.Printf("E! Unknow Replicas Mode")
 			}
 			// Add metrics
+			tags["input_plugin"] = "docker"
 			acc.AddFields("docker_swarm",
 				fields,
 				tags,
@@ -286,13 +287,17 @@ func (d *Docker) gatherInfo(acc telegraf.Accumulator) error {
 		"n_listener_events":       info.NEventsListener,
 	}
 	// Add metrics
+	tags := map[string]string{"engine_host": d.engine_host}
+	tags["input_plugin"] = "docker"
 	acc.AddFields("docker",
 		fields,
-		map[string]string{"engine_host": d.engine_host},
+		tags,
 		now)
+	tags = map[string]string{"unit": "bytes", "engine_host": d.engine_host}
+	tags["input_plugin"] = "docker"
 	acc.AddFields("docker",
 		map[string]interface{}{"memory_total": info.MemTotal},
-		map[string]string{"unit": "bytes", "engine_host": d.engine_host},
+		tags,
 		now)
 	// Get storage metrics
 	for _, rawData := range info.DriverStatus {
@@ -304,9 +309,11 @@ func (d *Docker) gatherInfo(acc telegraf.Accumulator) error {
 		name := strings.ToLower(strings.Replace(rawData[0], " ", "_", -1))
 		if name == "pool_blocksize" {
 			// pool blocksize
+			tags = map[string]string{"unit": "bytes", "engine_host": d.engine_host}
+			tags["input_plugin"] = "docker"
 			acc.AddFields("docker",
 				map[string]interface{}{"pool_blocksize": value},
-				map[string]string{"unit": "bytes", "engine_host": d.engine_host},
+				tags,
 				now)
 		} else if strings.HasPrefix(name, "data_space_") {
 			// data space
@@ -318,16 +325,20 @@ func (d *Docker) gatherInfo(acc telegraf.Accumulator) error {
 			metadataFields[fieldName] = value
 		}
 	}
+	tags = map[string]string{"unit": "bytes", "engine_host": d.engine_host}
+	tags["input_plugin"] = "docker"
 	if len(dataFields) > 0 {
 		acc.AddFields("docker_data",
 			dataFields,
-			map[string]string{"unit": "bytes", "engine_host": d.engine_host},
+			tags,
 			now)
 	}
+	tags = map[string]string{"unit": "bytes", "engine_host": d.engine_host}
+	tags["input_plugin"] = "docker"
 	if len(metadataFields) > 0 {
 		acc.AddFields("docker_metadata",
 			metadataFields,
-			map[string]string{"unit": "bytes", "engine_host": d.engine_host},
+			tags,
 			now)
 	}
 	return nil
@@ -362,6 +373,7 @@ func (d *Docker) gatherContainer(
 		"container_name":    cname,
 		"container_image":   imageName,
 		"container_version": imageVersion,
+		"input_plugin":      "docker",
 	}
 
 	if !d.containerFilter.Match(cname) {
@@ -494,7 +506,7 @@ func gatherContainerStats(
 		memfields["commit_peak_bytes"] = stat.MemoryStats.CommitPeak
 		memfields["private_working_set"] = stat.MemoryStats.PrivateWorkingSet
 	}
-
+	tags["input_plugin"] = "docker"
 	acc.AddFields("docker_container_mem", memfields, tags, tm)
 
 	cpufields := map[string]interface{}{
@@ -606,6 +618,7 @@ func gatherBlockIOMetrics(
 	perDevice bool,
 	total bool,
 ) {
+	tags["input_plugin"] = "docker"
 	blkioStats := stat.BlkioStats
 	// Make a map of devices to their block io stats
 	deviceStatMap := make(map[string]map[string]interface{})
