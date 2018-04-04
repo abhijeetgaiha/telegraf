@@ -57,8 +57,9 @@ func (p *Processes) Gather(acc telegraf.Accumulator) error {
 			return err
 		}
 	}
-
-	acc.AddGauge("processes", fields, nil)
+	tags := map[string]string{}
+	tags["input_plugin"] = "processes"
+	acc.AddGauge("processes", fields, tags)
 	return nil
 }
 

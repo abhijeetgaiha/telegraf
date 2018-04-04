@@ -158,6 +158,7 @@ func (n *Apache) gatherUrl(addr *url.URL, acc telegraf.Accumulator) error {
 			}
 		}
 	}
+	tags["input_plugin"] = "apache"
 	acc.AddFields("apache", fields, tags)
 
 	return nil

@@ -96,8 +96,9 @@ func (k *Kernel) Gather(acc telegraf.Accumulator) error {
 			fields["disk_pages_out"] = int64(out)
 		}
 	}
-
-	acc.AddCounter("kernel", fields, map[string]string{})
+	tags := map[string]string{}
+	tags["input_plugin"] = "Kernel"
+	acc.AddCounter("kernel", fields, tags)
 
 	return nil
 }

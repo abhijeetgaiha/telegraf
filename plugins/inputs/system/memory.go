@@ -37,7 +37,9 @@ func (s *MemStats) Gather(acc telegraf.Accumulator) error {
 		"used_percent":      100 * float64(vm.Used) / float64(vm.Total),
 		"available_percent": 100 * float64(vm.Available) / float64(vm.Total),
 	}
-	acc.AddCounter("mem", fields, nil)
+	tags := map[string]string{}
+	tags["input_plugin"] = "memory"
+	acc.AddCounter("mem", fields, tags)
 
 	return nil
 }
@@ -68,8 +70,10 @@ func (s *SwapStats) Gather(acc telegraf.Accumulator) error {
 		"in":  swap.Sin,
 		"out": swap.Sout,
 	}
-	acc.AddGauge("swap", fieldsG, nil)
-	acc.AddCounter("swap", fieldsC, nil)
+	tags := map[string]string{}
+	tags["input_plugin"] = "memory"
+	acc.AddGauge("swap", fieldsG, tags)
+	acc.AddCounter("swap", fieldsC, tags)
 
 	return nil
 }

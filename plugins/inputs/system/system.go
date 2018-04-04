@@ -37,20 +37,21 @@ func (_ *SystemStats) Gather(acc telegraf.Accumulator) error {
 	if err != nil {
 		return err
 	}
-
+	tags := map[string]string{}
+	tags["input_plugin"] = "suystem"
 	acc.AddGauge("system", map[string]interface{}{
 		"load1":   loadavg.Load1,
 		"load5":   loadavg.Load5,
 		"load15":  loadavg.Load15,
 		"n_users": len(users),
 		"n_cpus":  runtime.NumCPU(),
-	}, nil)
+	}, tags)
 	acc.AddCounter("system", map[string]interface{}{
 		"uptime": hostinfo.Uptime,
-	}, nil)
+	}, tags)
 	acc.AddFields("system", map[string]interface{}{
 		"uptime_format": format_uptime(hostinfo.Uptime),
-	}, nil)
+	}, tags)
 
 	return nil
 }
