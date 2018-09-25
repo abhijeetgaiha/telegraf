@@ -1,10 +1,13 @@
 package utility
 
 import (
+	"crypto/md5"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
 	"math"
+	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
@@ -14,6 +17,39 @@ import (
 
 	overflow "github.com/johncgriffin/overflow"
 )
+
+func Serialize(stringArray []string) string {
+	serializedArray := "["
+	for i := range stringArray {
+		serializedArray = serializedArray + stringArray[i] + ",\n"
+	}
+	serializedArray = serializedArray + "]"
+	return serializedArray
+}
+func GetRand() *rand.Rand {
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	return r1
+}
+
+//https://golang.org/pkg/crypto/md5/
+func Getmd5Hash(content string) (string, error) {
+	md5HashStr := ""
+	md5Hasher := md5.New()
+	data := []byte(content)
+	_, er := md5Hasher.Write(data)
+	if er != nil {
+		log.Println("Error while calculating md5 hash of block " + content + er.Error())
+		return "", er
+	}
+
+	md5HashStr = base64.StdEncoding.EncodeToString(md5Hasher.Sum(nil))
+	log.Println("md5hash of block content is (md5hash, content) " +
+		md5HashStr + " " +
+		content)
+
+	return md5HashStr, nil
+}
 
 type MdsdTime struct {
 	Seconds      int64
@@ -76,7 +112,7 @@ func GetUTCTicks_DescendingOrder(lastSampleTimestamp string) (uint64, error) {
 
 //period is in the format "60"
 //RETURNS: period in the format "PT1M"
-func GetPeriodStr(period string) (string, error) {
+func GetIntervalISO8601(period string) (string, error) {
 
 	var periodStr string
 
